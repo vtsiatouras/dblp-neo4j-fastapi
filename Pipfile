@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+fastapi = "~=0.65.1"
+uvicorn = "~=0.13.4"
+pydantic = {extras = ["dotenv"], version = "*"}
+starlette = "*"
+requests = "*"
+py2neo = "*"
+numpy = "*"
+pandas = "*"
+lxml = "*"
+
+[requires]
+python_version = "3.8"
