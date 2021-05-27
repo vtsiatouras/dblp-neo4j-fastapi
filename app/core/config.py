@@ -25,7 +25,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "DBLP Neo"
 
-    NEO4J_PASSWORD: str
+    DB_PASSWORD: str
 
     class Config:
         case_sensitive = True

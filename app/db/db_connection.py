@@ -4,4 +4,4 @@ from app.core.config import settings
 
 
 def get_db():
-    yield Graph(password=settings.NEO4J_PASSWORD)
+    yield Graph(password=settings.DB_PASSWORD)
