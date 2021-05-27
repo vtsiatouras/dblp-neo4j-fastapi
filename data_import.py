@@ -211,10 +211,11 @@ def associate_authors_with_publications(authors_names: list,
     :return: None
     """
     for it, author_name in enumerate(authors_names):
-        rel_dict = pages_dict
+        rel_dict = dict()
+        rel_dict.update(pages_dict)
         if it == 0:
             rel_dict.update({'first_author': True})
-        if it == len(authors_names) - 1 and it != 0:
+        elif it == len(authors_names) - 1:
             rel_dict.update({'last_author': True})
         data_list.append((author_name, rel_dict, (title, year)))
 
