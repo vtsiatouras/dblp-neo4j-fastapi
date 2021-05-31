@@ -1,35 +1,42 @@
-from typing import Any
+from typing import Any, List
 from fastapi import APIRouter, Depends
 from py2neo import Graph
 
 from app.db.db_connection import get_db
-# from app.models.models import
+from app.models.models import NameCount, TitleYear, TotalPages, NamesCount, NamesPair, NameConsecutiveYears, \
+    NameAverageAuthors, NameConsecutiveYearsDifferences, NameBookParts
 
 router = APIRouter()
 
 
-@router.get('/query-1', response_model=Any)
+@router.get('/query-1', response_model=List[TitleYear])
 def query_1(author: str, db: Graph = Depends(get_db)) -> Any:
+    """Find the titles (title, year) of publications that a particular author has published.
+    """
     query = "MATCH (a:Author{name: $name})-[:CONTRIBUTED]->(n) " \
-            "RETURN n.title, n.year " \
-            "ORDER BY n.year DESC"
+            "RETURN n.title AS title, n.year AS year " \
+            "ORDER BY year DESC"
     result = db.run(query, parameters={'name': author}).data()
     return result
 
 
-@router.get('/query-2', response_model=Any)
+@router.get('/query-2', response_model=List[NameCount])
 def query_2(author: str, year: str, db: Graph = Depends(get_db)) -> Any:
-    query = "MATCH (a:Author{name: $name})-[r_1:CONTRIBUTED]->(n{year: $year})<-[r_2:CONTRIBUTED]-(a_t:Author)" \
-            "WHERE r_1.start_page = r_2.start_page " \
-            "AND r_1.end_page = r_2.end_page " \
-            "RETURN a_t.name as co_author, count(*) AS num_of_coauthorships " \
-            "ORDER BY num_of_coauthorships DESC"
+    """Find the co-authors of an author (name, number of co-authorships) for a particular year.
+    """
+    query = "MATCH (a1:Author{name: $name})-[r1:CONTRIBUTED]->(n{year: $year})<-[r2:CONTRIBUTED]-(a2:Author)" \
+            "WHERE r1.start_page = r2.start_page " \
+            "AND r1.end_page = r2.end_page " \
+            "RETURN a2.name as name, count(*) AS count " \
+            "ORDER BY count DESC"
     result = db.run(query, parameters={'name': author, 'year': year}).data()
     return result
 
 
-@router.get('/query-3', response_model=Any)
+@router.get('/query-3', response_model=List[NameCount])
 def query_3(limit: int, inproc: bool = True, db: Graph = Depends(get_db)) -> Any:
+    """Find the top-K authors (name, count) with regard to most conference/journal publications.
+    """
     if inproc:
         query = "MATCH (a:Author)-[r:CONTRIBUTED]->(n:Inproceedings) " \
                 "RETURN a.name AS name, COUNT(n) AS count " \
@@ -44,23 +51,26 @@ def query_3(limit: int, inproc: bool = True, db: Graph = Depends(get_db)) -> Any
     return result
 
 
-@router.get('/query-4', response_model=Any)
+@router.get('/query-4', response_model=List[NameCount])
 def query_4(limit: int, db: Graph = Depends(get_db)) -> Any:
-    query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(publication)<-[r2:CONTRIBUTED]-(a2:Author) " \
+    """Find the top-K authors (name, count) with regard to most co-authors in a single work.
+    """
+    query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE a1 <> a2 " \
             "AND r1.start_page = r2.start_page " \
             "AND r1.end_page = r2.end_page " \
             "AND r1.first_author = True " \
-            "WITH a1.name AS author_name, count(a2) AS num_of_coauthors " \
-            "RETURN author_name, num_of_coauthors " \
-            "ORDER BY num_of_coauthors DESC " \
+            "RETURN a1.name AS name, count(a2) AS count " \
+            "ORDER BY count DESC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
     return result
 
 
-@router.get('/query-5', response_model=Any)
+@router.get('/query-5', response_model=List[NameCount])
 def query_5(year: str, limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the top-K authors (name, count) with regard to most co-authors in a particular year.
+    """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(n{year: $year})<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE a1 <> a2 " \
             "AND r1.start_page = r2.start_page " \
@@ -72,18 +82,22 @@ def query_5(year: str, limit: int, db: Graph = Depends(get_db)) -> Any:
     return result
 
 
-@router.get('/query-6', response_model=Any)
+@router.get('/query-6', response_model=List[NameCount])
 def query_6(limit: int, db: Graph = Depends(get_db)) -> Any:
-    query = "MATCH (a1:Author)-[:CONTRIBUTED]->(n) " \
-            "RETURN a1.name AS name, count(distinct(n.year)) AS count " \
+    """Find the top-K authors (name, count) with regard to most active years.
+    """
+    query = "MATCH (a:Author)-[:CONTRIBUTED]->(n) " \
+            "RETURN a.name AS name, count(distinct(n.year)) AS count " \
             "ORDER BY count DESC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
     return result
 
 
-@router.get('/query-7', response_model=Any)
+@router.get('/query-7', response_model=List[NameCount])
 def query_7(limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the top-K authors (name, count) with regard to most co-authors that have not published together.
+    """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE a1 <> a2 " \
             "AND r1.start_page = r2.start_page " \
@@ -103,11 +117,14 @@ def query_7(limit: int, db: Graph = Depends(get_db)) -> Any:
     return result
 
 
-@router.get('/query-8', response_model=Any)
+@router.get('/query-8', response_model=List[NameCount])
 def query_8(limit: int, db: Graph = Depends(get_db)) -> Any:
-    query = "MATCH (a1:Author)-[:CONTRIBUTED]->(n) " \
-            "WITH a1, COUNT(DISTINCT(n.year)) AS activeYears, COUNT(n.title) AS publications " \
-            "RETURN a1.name AS name, toFloat(publications) / activeYears AS count " \
+    """Find the top-K authors (name, count) with regard to largest average number of journal publications per year
+    (consider only active years).
+    """
+    query = "MATCH (a:Author)-[:CONTRIBUTED]->(n) " \
+            "WITH a, COUNT(DISTINCT(n.year)) AS activeYears, COUNT(n.title) AS publications " \
+            "RETURN a.name AS name, toFloat(publications) / activeYears AS count " \
             "ORDER BY count DESC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
@@ -116,6 +133,9 @@ def query_8(limit: int, db: Graph = Depends(get_db)) -> Any:
 
 @router.get('/query-9', response_model=Any)
 def query_9(limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the top-K authors (name, count) that a given author has not worked with, with regard
+    to most co-authorships with authors that the given author has worked with.
+    """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE a1 <> a2 " \
             "AND r1.start_page = r2.start_page " \
@@ -161,28 +181,35 @@ def query_9(limit: int, db: Graph = Depends(get_db)) -> Any:
 # limit 10
 
 
-@router.get('/query-10', response_model=Any)
+@router.get('/query-10', response_model=List[NameCount])
 def query_10(year: str, limit: int, db: Graph = Depends(get_db)) -> Any:
-    query = "MATCH (a1:Author)-[:CONTRIBUTED]->(n{year: $year}) " \
-            "WITH a1, COUNT(n.title) AS count " \
+    """Find the authors (name, count) that have published more than three works in a given single year.
+    """
+    query = "MATCH (a:Author)-[:CONTRIBUTED]->(n{year: $year}) " \
+            "WITH a, COUNT(n.title) AS count " \
             "WHERE count > 3 " \
-            "RETURN a1.name AS name, count " \
+            "RETURN a.name AS name, count " \
             "ORDER BY count DESC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'year': year, 'limit': limit}).data()
     return result
 
 
-@router.get('/query-11', response_model=Any)
+@router.get('/query-11', response_model=List[TotalPages])
 def query_11(author: str, year: str, db: Graph = Depends(get_db)) -> Any:
+    """Find the number of pages that a particular author has published in a given year.
+    """
     query = "MATCH (a:Author{name: $name})-[r:CONTRIBUTED]->(n{year: $year}) " \
             "RETURN SUM(r.total_pages) AS total_pages"
     result = db.run(query, parameters={'name': author, 'year': year}).data()
     return result
 
 
-@router.get('/query-12', response_model=Any)
+@router.get('/query-12', response_model=List[NameCount])
 def query_12(title: str, year: str, limit: int, first_author: bool = True, db: Graph = Depends(get_db)) -> Any:
+    """Find the top-K authors (name, count) with regard to articles published in a particular journal
+    as a first/last author in a given year.
+    """
     if first_author:
         query = "MATCH (a:Author)-[r:CONTRIBUTED{first_author: True}]->(ar:Article{year: $year})-[:PUBLISHED]->" \
                 "(j:Journal{title: $title}) " \
@@ -199,8 +226,10 @@ def query_12(title: str, year: str, limit: int, first_author: bool = True, db: G
     return result
 
 
-@router.get('/query-13', response_model=Any)
+@router.get('/query-13', response_model=List[NamesCount])
 def query_13(title: str, limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the three authors that have appeared as co-authors for the most times in a particular journal.
+    """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(ar:Article)-[:PUBLISHED]->(j:Journal{title: $title}) " \
             "MATCH (a2:Author)-[r2:CONTRIBUTED]->(ar:Article)-[:PUBLISHED]->(j:Journal{title: $title}) " \
             "MATCH (a3:Author)-[r3:CONTRIBUTED]->(ar:Article)-[:PUBLISHED]->(j:Journal{title: $title}) " \
@@ -211,15 +240,17 @@ def query_13(title: str, limit: int, db: Graph = Depends(get_db)) -> Any:
             "AND r3.end_page = r2.end_page " \
             "AND r1.start_page = r3.start_page " \
             "AND r1.end_page = r3.end_page " \
-            "RETURN a1.name, a2.name, a3.name, count(ar) AS count " \
+            "RETURN a1.name AS name1, a2.name AS name2, a3.name AS name3, count(ar) AS count " \
             "ORDER BY count DESC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'title': title, 'limit': limit}).data()
     return result
 
 
-@router.get('/query-14', response_model=Any)
+@router.get('/query-14', response_model=List[NamesPair])
 def query_14(limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find pairs of authors that have appeared in different parts of the same book and have never co-authored a work.
+    """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(:Incollection)-[:PUBLISHED]->(b:Book)<-[:PUBLISHED]-" \
             "(:Incollection)<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE id(a1) < id(a2) " \
@@ -232,14 +263,16 @@ def query_14(limit: int, db: Graph = Depends(get_db)) -> Any:
             "   AND r1.start_page = r2.start_page " \
             "   AND r1.end_page = r2.end_page " \
             "} " \
-            "RETURN a1.name, a2.name " \
+            "RETURN a1.name AS name1, a2.name AS name2 " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
     return result
 
 
-@router.get('/query-15', response_model=Any)
+@router.get('/query-15', response_model=List[NameConsecutiveYears])
 def query_15(k: int, limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the authors that have published work for K consecutive years.
+    """
     query = "MATCH (a1:Author)-[:CONTRIBUTED]->(n) " \
             "WITH a1, COLLECT(DISTINCT n.year) AS years " \
             "WITH a1, apoc.convert.toIntList(years) AS years " \
@@ -255,8 +288,10 @@ def query_15(k: int, limit: int, db: Graph = Depends(get_db)) -> Any:
     return result
 
 
-@router.get('/query-16', response_model=Any)
+@router.get('/query-16', response_model=List[NameAverageAuthors])
 def query_16(limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the top-K authors with regard to average number of co-authors in their publications.
+    """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(n)<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE id(a1) < id(a2) " \
             "AND r1.start_page = r2.start_page " \
@@ -269,26 +304,30 @@ def query_16(limit: int, db: Graph = Depends(get_db)) -> Any:
     return result
 
 
-@router.get('/query-17', response_model=Any)
+@router.get('/query-17', response_model=List[NameConsecutiveYearsDifferences])
 def query_17(limit: int, db: Graph = Depends(get_db)) -> Any:
+    """Find the authors of consecutively published papers with more than a given amount of years between them.
+    """
     query = "MATCH (a1:Author)-[:CONTRIBUTED]->(n) " \
             "WITH DISTINCT a1 AS a1, COLLECT(DISTINCT n.year) AS years " \
             "WITH a1, apoc.convert.toIntList(years) AS years " \
             "WITH a1, apoc.coll.sort(years) AS years " \
             "WITH a1, apoc.coll.pairsMin(years) AS years " \
-            "WITH a1, REDUCE(output = [], r IN years | output + (r[1] - r[0])) AS years_differences " \
-            "WHERE ANY(year IN years_differences WHERE year >= 2) " \
-            "RETURN a1.name AS name, years_differences " \
-            "ORDER BY years_differences ASC " \
+            "WITH a1, REDUCE(output = [], r IN years | output + (r[1] - r[0])) AS yearsDifferences " \
+            "WHERE ANY(year IN yearsDifferences WHERE year >= 2) " \
+            "RETURN a1.name AS name, yearsDifferences " \
+            "ORDER BY yearsDifferences ASC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
     return result
 
 
-@router.get('/query-18', response_model=Any)
+@router.get('/query-18', response_model=List[NameBookParts])
 def query_18(db: Graph = Depends(get_db)) -> Any:
+    """Find the author (name, count) with the most parts in a single book of collective works.
+    """
     query = "MATCH (a1:Author)-[r:CONTRIBUTED]->(:Incollection)-[:PUBLISHED]->(b:Book) " \
-            "RETURN a1.name, b.title, COUNT(r) AS parts " \
+            "RETURN a1.name AS name, b.title AS title, COUNT(r) AS parts " \
             "ORDER BY parts DESC " \
             "LIMIT 1"
     result = db.run(query).data()
