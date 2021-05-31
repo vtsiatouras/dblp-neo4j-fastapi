@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "DBLP Neo"
 
+    DB_HOST: str
     DB_PASSWORD: str
 
     class Config:

@@ -23,7 +23,7 @@ services:
     command: neo4j
 
   api:
-    container_name: api2
+    container_name: api
     build:
       context: ./
       dockerfile: ./Dockerfile

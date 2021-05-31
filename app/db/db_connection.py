@@ -4,4 +4,4 @@ from app.core.config import settings
 
 
 def get_db():
-    yield Graph(password=settings.DB_PASSWORD)
+    yield Graph(host=settings.DB_HOST, password=settings.DB_PASSWORD)
