@@ -96,7 +96,8 @@ def query_6(limit: int, db: Graph = Depends(get_db)) -> Any:
 
 @router.get('/query-7', response_model=List[NameCount])
 def query_7(limit: int, db: Graph = Depends(get_db)) -> Any:
-    """Find the top-K authors (name, count) with regard to most co-authors that have not published together.
+    """Find the top-K authors (name, count) with regard to most distinct pairs of co-authors that have not published
+    together.
     """
     query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE a1 <> a2 " \
@@ -131,54 +132,33 @@ def query_8(limit: int, db: Graph = Depends(get_db)) -> Any:
     return result
 
 
-@router.get('/query-9', response_model=Any)
+@router.get('/query-9', response_model=List[NameCount])
 def query_9(limit: int, db: Graph = Depends(get_db)) -> Any:
     """Find the top-K authors (name, count) that a given author has not worked with, with regard
     to most co-authorships with authors that the given author has worked with.
     """
-    query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(a2:Author) " \
-            "WHERE a1 <> a2 " \
-            "AND r1.start_page = r2.start_page " \
-            "AND r1.end_page = r2.end_page " \
-            "WITH a1 AS author, a2 AS coAuthor " \
-            "MATCH (coAuthor:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(coAuthor_coAuthor:Author) " \
-            "WHERE coAuthor <> coAuthor_coAuthor " \
-            "AND author <> coAuthor_coAuthor " \
-            "AND r1.start_page = r2.start_page " \
-            "AND r1.end_page = r2.end_page " \
-            "WITH author, coAuthor_coAuthor " \
-            "WHERE NOT EXISTS {" \
-            "   MATCH (author:Author)-[rr1:CONTRIBUTED]->()<-[rr2:CONTRIBUTED]-(coAuthor_coAuthor:Author) " \
-            "   WHERE author <> coAuthor_coAuthor " \
-            "   AND rr1.start_page = rr2.start_page " \
-            "   AND rr1.end_page = rr2.end_page " \
-            "} " \
-            "RETURN author.name, COUNT(DISTINCT coAuthor_coAuthor) " \
-            "ORDER BY COUNT(DISTINCT coAuthor_coAuthor) DESC " \
+    query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(work1)<-[r2_1:CONTRIBUTED]-(a2:Author)-[r2_2:CONTRIBUTED]->" \
+            "(work2)<-[r3:CONTRIBUTED]-(a3:Author) " \
+            "WHERE work1 <> work2 " \
+            "AND a1 <> a2 " \
+            "AND a2 <> a3 " \
+            "AND a3 <> a1 " \
+            "AND r1.start_page = r2_1.start_page " \
+            "AND r1.end_page = r2_1.end_page " \
+            "AND r2_2.start_page = r3.start_page " \
+            "AND r2_2.end_page = r3.end_page " \
+            "WITH a1, a3 " \
+            "OPTIONAL MATCH (a1)-[rr1:CONTRIBUTED]->(work)<-[rr2:CONTRIBUTED]-(a3) " \
+            "WHERE a1 <> a3 " \
+            "AND rr1.start_page = rr2.start_page " \
+            "AND rr1.end_page = rr2.end_page " \
+            "WITH a1, a3, work " \
+            "WHERE work IS NULL " \
+            "RETURN a1.name AS name, COUNT(DISTINCT a3) AS count " \
+            "ORDER BY count DESC " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
     return result
-# 9
-# MATCH (a1:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(a2:Author)
-# WHERE a1 <> a2
-# and r1.start_page = r2.start_page
-# and r1.end_page = r2.end_page
-# WITH a1 as author, a2 as coAuthor
-# MATCH (coAuthor:Author)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]-(coAuthor_coAuthor:Author)
-# WHERE coAuthor <> coAuthor_coAuthor
-# and author <> coAuthor_coAuthor
-# and r1.start_page = r2.start_page
-# and r1.end_page = r2.end_page
-# with author, coAuthor_coAuthor
-# where not exists {
-#     MATCH (author:Author)-[rr1:CONTRIBUTED]->()<-[rr2:CONTRIBUTED]-(coAuthor_coAuthor:Author)
-#     WHERE author <> coAuthor_coAuthor
-#     and rr1.start_page = rr2.start_page
-#     and rr1.end_page = rr2.end_page
-# }
-# return author.name, count(distinct coAuthor_coAuthor)
-# order by count(distinct coAuthor_coAuthor) desc
-# limit 10
 
 
 @router.get('/query-10', response_model=List[NameCount])
@@ -251,19 +231,19 @@ def query_13(title: str, limit: int, db: Graph = Depends(get_db)) -> Any:
 def query_14(limit: int, db: Graph = Depends(get_db)) -> Any:
     """Find pairs of authors that have appeared in different parts of the same book and have never co-authored a work.
     """
-    query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(:Incollection)-[:PUBLISHED]->(b:Book)<-[:PUBLISHED]-" \
-            "(:Incollection)<-[r2:CONTRIBUTED]-(a2:Author) " \
+    query = "MATCH (a1:Author)-[r1:CONTRIBUTED]->(:Incollection)-[:PUBLISHED]->(b:Book)<-" \
+            "[:PUBLISHED]-(:Incollection)<-[r2:CONTRIBUTED]-(a2:Author) " \
             "WHERE id(a1) < id(a2) " \
             "AND r1.start_page <> r2.start_page " \
             "AND r1.end_page <> r2.end_page " \
             "WITH a1, a2 " \
-            "WHERE NOT EXISTS { " \
-            "   MATCH (a1)-[r1:CONTRIBUTED]->()<-[r2:CONTRIBUTED]->(a2) " \
-            "   WHERE a1 <> a2 " \
-            "   AND r1.start_page = r2.start_page " \
-            "   AND r1.end_page = r2.end_page " \
-            "} " \
-            "RETURN a1.name AS name1, a2.name AS name2 " \
+            "OPTIONAL MATCH (a1)-[r1:CONTRIBUTED]->(work)<-[r2:CONTRIBUTED]-(a2) " \
+            "WHERE a1 <> a2 " \
+            "AND r1.start_page = r2.start_page " \
+            "AND r1.end_page = r2.end_page " \
+            "WITH a1, a2, work " \
+            "WHERE work IS NULL " \
+            "RETURN DISTINCT a1.name AS name1, a2.name AS name2 " \
             "LIMIT $limit"
     result = db.run(query, parameters={'limit': limit}).data()
     return result
