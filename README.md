@@ -1,6 +1,6 @@
 # DBLP Neo4J FastAPI
 
-[![Python](https://img.shields.io/badge/Python-3.7%20%7C%203.8%20%7C%203.9-blue.svg?logo=python&logoColor=white)](https://www.python.org/)  [![Neo4J](https://img.shields.io/badge/Neo4j-4.2.x-589636.svg?logo=neo4j&logoColor=white)](https://neo4j.com/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.65.x-589636.svg?logo=fastapi&logoColor=white)](https://neo4j.com/)
+[![Python](https://img.shields.io/badge/Python-3.7%20%7C%203.8%20%7C%203.9-blue.svg?logo=python&logoColor=white)](https://www.python.org/)  [![Neo4J](https://img.shields.io/badge/Neo4j-4.2.x-589636.svg?logo=neo4j&logoColor=white)](https://neo4j.com/) [![FastAPI](https://img.shields.io/badge/FastAPI-0.65.x-589636.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 
 This repository contains a FastAPI application that connects to a Neo4j Database and process some metrics for DBLP computer science bibliography.
 
