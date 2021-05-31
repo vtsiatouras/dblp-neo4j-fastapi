@@ -350,7 +350,9 @@ def parse_xml_gz_file(input_file: str, dtd_file: str) -> None:
                     buffer += line[:idx] + tag
                     import_data(buffer, dtd_file)
                     # print(count)
-                    # count += 1
+                    count += 1
+                    if count == 1000000:
+                        return
                     buffer = ""
                     break
 
