@@ -124,7 +124,7 @@ The API & the documentation pages page are available to the same addresses that 
 
 ## Endpoints
 
-The endpoints implementation along with the Cypher Queries can be found [here](link).
+The endpoints implementation along with the Cypher Queries can be found [here](https://github.com/VangelisTsiatouras/dblp-neo4j-fastapi/blob/main/app/api/v1/endpoints/queries.py).
 
 For the results below is used my development machine (i7-2600, 16GB RAM, 120GB SSD) with 530K nodes 847K relationships 
 stored on the database.
@@ -201,7 +201,7 @@ response time 24.2 ms
 Find the co-authors of an author (name, number of co-authorships) for a particular year.
 
 __params__  
-author: string   
+author: string  
 year:   string   
 
 eg.
@@ -243,8 +243,8 @@ response time 14.9 ms
 Find the top-K authors (name, count) with regard to most conference/journal publications.
 
 __params__   
-limit:  int
-inproc: boolean
+limit:  int  
+inproc: boolean  
 
 eg.  
 ```text
@@ -409,7 +409,7 @@ Find the top-K authors (name, count) with regard to most co-authors in a particu
 
 __params__  
 year:   string  
-limit:  int
+limit:  int  
 
 eg.  
 
@@ -707,8 +707,8 @@ The slowest query of all.
 Find the authors (name, count) that have published more than three works in a given single year.
 
 __params__   
-limit: int
-year:  string
+limit: int  
+year:  string  
 
 eg.  
 
@@ -766,7 +766,7 @@ response time 859 ms
 Find the number of pages that a particular author has published in a given year.
 
 __params__  
-author: string   
+author: string  
 year:   string  
  
 eg.  
@@ -789,10 +789,10 @@ Find the top-K authors (name, count) with regard to articles published in a part
 in a given year.
 
 __params__  
-title:        string   
-year:         string
-limit:        int
-first_author: boolean
+title:        string  
+year:         string  
+limit:        int  
+first_author: boolean  
  
 eg.  
 
@@ -899,8 +899,8 @@ response time 53.3 ms
 Find the three authors that have appeared as co-authors for the most times in a particular journal.
 
 __params__  
-title:  string   
-limit:  int
+title:  string  
+limit:  int  
  
 eg.  
 
@@ -1036,8 +1036,8 @@ response time 210 ms
 Find the authors that have published work for K consecutive years.
 
 __params__ 
-k:      int
-limit:  int
+k:      int  
+limit:  int  
  
 eg.  
 
@@ -1271,7 +1271,7 @@ response time 78.2 s
 
 A higher level visualization of the schema is the following:
 
-![schema](link)
+![schema](https://github.com/VangelisTsiatouras/dblp-neo4j-fastapi/blob/main/assist_material/schema.png)
 
 Also, by running `CALL apoc.meta.schema() YIELD value UNWIND keys(value) AS key RETURN key, value[key] AS value;` we can 
 extract the detailed schema of the database.
@@ -1281,357 +1281,345 @@ extract the detailed schema of the database.
   {
     "key": "Incollection",
     "value": {
-"count": 3801,
-"relationships": {
-"CONTRIBUTED": {
-"count": 10422,
-"properties": {
-"total_pages": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+      "count": 3801,
+      "relationships": {
+        "CONTRIBUTED": {
+          "count": 10422,
+          "properties": {
+            "total_pages": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"end_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "end_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"start_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "start_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"first_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "first_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             },
-"last_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "last_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             }
           },
-"direction": "in",
-"labels": [
+          "direction": "in",
+          "labels": [
             "Author"
           ]
         },
-"PUBLISHED": {
-"count": 461725,
-"properties": {
-
-          },
-"direction": "out",
-"labels": [
+        "PUBLISHED": {
+          "count": 461725,
+          "properties": {},
+          "direction": "out",
+          "labels": [
             "Book"
           ]
         }
       },
-"type": "node",
-"properties": {
-"title": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "title": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         },
-"year": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+        "year": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   },
   {
     "key": "PUBLISHED",
     "value": {
-"count": 206123,
-"type": "relationship",
-"properties": {
-
-      }
+      "count": 206123,
+      "type": "relationship",
+      "properties": {}
     }
   },
   {
     "key": "Book",
     "value": {
-"count": 32,
-"relationships": {
-"PUBLISHED": {
-"count": 1270,
-"properties": {
-
-          },
-"direction": "in",
-"labels": [
+      "count": 32,
+      "relationships": {
+        "PUBLISHED": {
+          "count": 1270,
+          "properties": {},
+          "direction": "in",
+          "labels": [
             "Incollection"
           ]
         }
       },
-"type": "node",
-"properties": {
-"title": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "title": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   },
   {
     "key": "Article",
     "value": {
-"count": 197718,
-"relationships": {
-"CONTRIBUTED": {
-"count": 10422,
-"properties": {
-"total_pages": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+      "count": 197718,
+      "relationships": {
+        "CONTRIBUTED": {
+          "count": 10422,
+          "properties": {
+            "total_pages": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"end_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "end_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"start_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "start_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"first_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "first_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             },
-"last_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "last_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             }
           },
-"direction": "in",
-"labels": [
+          "direction": "in",
+          "labels": [
             "Author"
           ]
         },
-"PUBLISHED": {
-"count": 1377523,
-"properties": {
-
-          },
-"direction": "out",
-"labels": [
+        "PUBLISHED": {
+          "count": 1377523,
+          "properties": {},
+          "direction": "out",
+          "labels": [
             "Journal"
           ]
         }
       },
-"type": "node",
-"properties": {
-"title": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "title": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         },
-"year": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+        "year": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   },
   {
     "key": "Author",
     "value": {
-"count": 325266,
-"relationships": {
-"CONTRIBUTED": {
-"count": 9237,
-"properties": {
-"total_pages": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+      "count": 325266,
+      "relationships": {
+        "CONTRIBUTED": {
+          "count": 9237,
+          "properties": {
+            "total_pages": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"end_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "end_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"start_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "start_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"first_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "first_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             },
-"last_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "last_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             }
           },
-"direction": "out",
-"labels": [
+          "direction": "out",
+          "labels": [
             "Article",
             "Incollection",
             "Inproceedings"
           ]
         }
       },
-"type": "node",
-"properties": {
-"name": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "name": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   },
   {
     "key": "Journal",
     "value": {
-"count": 659,
-"relationships": {
-"PUBLISHED": {
-"count": 1068,
-"properties": {
-
-          },
-"direction": "in",
-"labels": [
+      "count": 659,
+      "relationships": {
+        "PUBLISHED": {
+          "count": 1068,
+          "properties": {},
+          "direction": "in",
+          "labels": [
             "Article"
           ]
         }
       },
-"type": "node",
-"properties": {
-"title": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "title": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   },
   {
     "key": "Inproceedings",
     "value": {
-"count": 2910,
-"relationships": {
-"CONTRIBUTED": {
-"count": 10422,
-"properties": {
-"total_pages": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+      "count": 2910,
+      "relationships": {
+        "CONTRIBUTED": {
+          "count": 10422,
+          "properties": {
+            "total_pages": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"end_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "end_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"start_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+            "start_page": {
+              "existence": false,
+              "type": "INTEGER",
+              "array": false
             },
-"first_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "first_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             },
-"last_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+            "last_author": {
+              "existence": false,
+              "type": "BOOLEAN",
+              "array": false
             }
           },
-"direction": "in",
-"labels": [
+          "direction": "in",
+          "labels": [
             "Author"
           ]
         },
-"PUBLISHED": {
-"count": 1036165,
-"properties": {
-
-          },
-"direction": "out",
-"labels": [
+        "PUBLISHED": {
+          "count": 1036165,
+          "properties": {},
+          "direction": "out",
+          "labels": [
             "Conference"
           ]
         }
       },
-"type": "node",
-"properties": {
-"title": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "title": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         },
-"year": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+        "year": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   },
   {
     "key": "CONTRIBUTED",
     "value": {
-"count": 640763,
-"type": "relationship",
-"properties": {
-"total_pages": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+      "count": 640763,
+      "type": "relationship",
+      "properties": {
+        "total_pages": {
+          "existence": false,
+          "type": "INTEGER",
+          "array": false
         },
-"end_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+        "end_page": {
+          "existence": false,
+          "type": "INTEGER",
+          "array": false
         },
-"start_page": {
-"existence": false,
-"type": "INTEGER",
-"array": false
+        "start_page": {
+          "existence": false,
+          "type": "INTEGER",
+          "array": false
         },
-"first_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+        "first_author": {
+          "existence": false,
+          "type": "BOOLEAN",
+          "array": false
         },
-"last_author": {
-"existence": false,
-"type": "BOOLEAN",
-"array": false
+        "last_author": {
+          "existence": false,
+          "type": "BOOLEAN",
+          "array": false
         }
       }
     }
@@ -1639,29 +1627,27 @@ extract the detailed schema of the database.
   {
     "key": "Conference",
     "value": {
-"count": 31,
-"relationships": {
-"PUBLISHED": {
-"count": 3117,
-"properties": {
-
-          },
-"direction": "in",
-"labels": [
+      "count": 31,
+      "relationships": {
+        "PUBLISHED": {
+          "count": 3117,
+          "properties": {},
+          "direction": "in",
+          "labels": [
             "Inproceedings"
           ]
         }
       },
-"type": "node",
-"properties": {
-"title": {
-"existence": false,
-"type": "STRING",
-"indexed": true,
-"unique": false
+      "type": "node",
+      "properties": {
+        "title": {
+          "existence": false,
+          "type": "STRING",
+          "indexed": true,
+          "unique": false
         }
       },
-"labels": []
+      "labels": []
     }
   }
 ]
