@@ -1263,7 +1263,7 @@ http://0.0.0.0:8000/api/v1/query-18
   }
 ]
 
-response time 78.2 s
+response time 78.2 ms
 ```
 
 
